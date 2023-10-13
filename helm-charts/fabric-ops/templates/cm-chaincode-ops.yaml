@@ -558,6 +558,20 @@ data:
       fi
       {{- end }}
   {{- end }}
+  {{- if .Values.fabric_actions.invoke_chaincode }}
+  fabric_invoke_chaincode.sh: |
+
+      CC_NAME={{ .Values.cc_name }}
+
+      peer chaincode invoke -o {{ .Values.orderer_endpoint }} --channelID {{ $ChannelName }} --name $CC_NAME --tls --cafile $ORDERER_CA --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"{{ .Values.function_name }}","Args":[]}' --connTimeout 30s
+      if [ $? -ne 0 ]; then
+        echo "========================================= [ERROR] =============================================="
+        echo "[ERROR]::One of the previous step returned an error, please debug it manually using cli pod and re-run this job if necessary"
+      else
+        echo "========================================= [SUCCESS] =============================================="
+        echo "[SUCCESS]::All steps have been executed successfully."
+      fi
+  {{- end }}
   {{- if .Values.fabric_actions.update_anchor_peer | default false }}
   fabric_update_anchorpeer.sh: |
       echo "============================ Starting anchor peer update ============================"
